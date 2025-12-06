@@ -68,11 +68,15 @@ tasks.withType<Test> {
 
 flyway {
     val properties = Properties()
-    file("src/main/resources/application.yaml").inputStream().use {
-        properties.load(it)
-    }
+    val propFile = file("src/main/resources/application.yaml")
 
-    url = properties.getProperty("spring.datasource.url")
-    user = properties.getProperty("spring.datasource.username")
-    password = properties.getProperty("spring.datasource.password")
+    // 파일이 존재할 때만 읽어오기 (CI 환경 에러 방지)
+    if (propFile.exists()) {
+        propFile.inputStream().use {
+            properties.load(it)
+        }
+        url = properties.getProperty("spring.datasource.url")
+        user = properties.getProperty("spring.datasource.username")
+        password = properties.getProperty("spring.datasource.password")
+    }
 }
