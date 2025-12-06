@@ -1,0 +1,44 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: spring-app
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: spring-app
+  template:
+    metadata:
+      labels:
+        app: spring-app
+    spec:
+      containers:
+        - name: spring-app
+          image: parkjunyoung2024/spring-seminar:latest
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 8080
+          env:
+            # DB와 Redis 연결 정보 (K3s 내부 주소)
+            - name: SPRING_DATASOURCE_URL
+              value: "jdbc:mysql://my-mysql:3306/mydb?useSSL=false&allowPublicKeyRetrieval=true"
+            - name: SPRING_DATASOURCE_USERNAME
+              value: "root"
+            - name: SPRING_DATASOURCE_PASSWORD
+              value: "password"
+            - name: SPRING_DATA_REDIS_HOST
+              value: "my-redis-master"
+            - name: SPRING_DATA_REDIS_PORT
+              value: "6379"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: spring-app-svc
+spec:
+  type: LoadBalancer
+  selector:
+    app: spring-app
+  ports:
+    - port: 80
+      targetPort: 8080
