@@ -60,6 +60,27 @@ class UserService(
         user: User,
         token: String,
     ) {
-        TODO()
+        // 1. 토큰에서 "Bearer " 접두사 제거 (혹시 붙어있을 경우를 대비)
+        val resolvedToken =
+            if (token.startsWith("Bearer ")) {
+                token.substring(7)
+            } else {
+                token
+            }
+
+        // 2. 토큰의 남은 유효 시간 계산 (JwtTokenProvider에 getExpiration 메서드 필요)
+        val expiration = jwtTokenProvider.getExpiration(resolvedToken)
+        val now = System.currentTimeMillis()
+        val ttl = expiration - now
+
+        // 3. 유효 기간이 남았다면 Redis에 블랙리스트로 등록
+        if (ttl > 0) {
+            redisTemplate.opsForValue().set(
+                resolvedToken,
+                "logout",
+                ttl,
+                TimeUnit.MILLISECONDS,
+            )
+        }
     }
 }
