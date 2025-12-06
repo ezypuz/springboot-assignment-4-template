@@ -45,7 +45,7 @@ jobs:
             export KUBECONFIG=/etc/rancher/k3s/k3s.yaml
             
             # 전송된 파일로 배포 적용
-            sudo kubectl apply -f /home/ubuntu/k8s-app.yaml
+            sudo kubectl apply --validate=false -f /home/ubuntu/k8s-app.yaml
             
             # 배포 재시작 (이미지 업데이트)
-            sudo kubectl rollout restart deployment/spring-app
+            sudo kubectl rollout restart deployment/spring-app --request-timeout=2m
