@@ -34,7 +34,7 @@ jobs:
           host: ${{ secrets.EC2_HOST }}
           username: ubuntu
           key: ${{ secrets.EC2_KEY }}
-          source: "k8s/"
+          source: "k8s-app.yaml"
           target: "/home/ubuntu/"
 
       - name: Deploy to K3s

@@ -11,3 +11,9 @@ services:
       MYSQL_DATABASE: seminar2025
       MYSQL_USER: user
       MYSQL_PASSWORD: somepassword
+
+  redis:
+    image: redis:7-alpine
+    container_name: redis-server
+    ports:
+      - "6379:6379"
