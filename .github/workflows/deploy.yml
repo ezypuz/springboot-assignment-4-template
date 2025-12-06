@@ -25,15 +25,27 @@ jobs:
           docker build -t ${{ secrets.DOCKER_USERNAME }}/spring-seminar:latest .
           docker push ${{ secrets.DOCKER_USERNAME }}/spring-seminar:latest
 
-      - name: Deploy to EC2
+      - name: Copy k8s-app.yaml to EC2
+        uses: appleboy/scp-action@master
+        with:
+          host: ${{ secrets.EC2_HOST }}
+          username: ubuntu
+          key: ${{ secrets.EC2_KEY }}
+          source: "k8s-app.yaml"
+          target: "/home/ubuntu/"
+
+      - name: Deploy to K3s
         uses: appleboy/ssh-action@master
         with:
           host: ${{ secrets.EC2_HOST }}
           username: ubuntu
           key: ${{ secrets.EC2_KEY }}
           script: |
-            cat <<EOF > k8s-app.yaml
-            $(cat k8s-app.yaml)
-            EOF
-            sudo kubectl apply -f k8s-app.yaml
+            # K3s 설정 파일 위치를 강제로 지정해줍니다.
+            export KUBECONFIG=/etc/rancher/k3s/k3s.yaml
+            
+            # 전송된 파일로 배포 적용
+            sudo kubectl apply -f /home/ubuntu/k8s-app.yaml
+            
+            # 배포 재시작 (이미지 업데이트)
             sudo kubectl rollout restart deployment/spring-app
