@@ -50,6 +50,6 @@ jobs:
             sudo chown ubuntu:ubuntu ~/.kube/config
             
             # 배포
-            kubectl apply -f /home/ubuntu/k8s/
+            kubectl apply -f /home/ubuntu/k8s-app.yaml
             kubectl rollout restart deployment/spring-app -n default
-            kubectl rollout status deployment/spring-app -n default --timeout=5mc
+            kubectl rollout status deployment/spring-app -n default --timeout=5m
