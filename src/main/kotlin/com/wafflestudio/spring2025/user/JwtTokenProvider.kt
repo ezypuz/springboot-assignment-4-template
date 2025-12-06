@@ -4,6 +4,7 @@ import io.jsonwebtoken.Jwts
 import io.jsonwebtoken.SignatureAlgorithm
 import io.jsonwebtoken.security.Keys
 import org.springframework.beans.factory.annotation.Value
+import org.springframework.data.redis.core.StringRedisTemplate
 import org.springframework.stereotype.Component
 import java.util.Date
 
@@ -13,6 +14,7 @@ class JwtTokenProvider(
     private val secretKey: String,
     @Value("\${jwt.expiration-in-ms}")
     private val expirationInMs: Long,
+    private val redisTemplate: StringRedisTemplate,
 ) {
     private val key = Keys.hmacShaKeyFor(secretKey.toByteArray())
 
@@ -40,6 +42,10 @@ class JwtTokenProvider(
 
     fun validateToken(token: String): Boolean {
         try {
+            if (redisTemplate.hasKey(token)) {
+                return false // 블랙리스트에 있으면 유효하지 않은 토큰으로 처리
+            }
+
             Jwts
                 .parserBuilder()
                 .setSigningKey(key)
