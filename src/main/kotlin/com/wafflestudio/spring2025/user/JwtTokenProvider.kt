@@ -60,7 +60,7 @@ class JwtTokenProvider(
         val claims =
             Jwts
                 .parserBuilder()
-                .setSigningKey(secretKey)
+                .setSigningKey(key)
                 .build()
                 .parseClaimsJws(token)
                 .body
