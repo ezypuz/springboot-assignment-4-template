@@ -26,6 +26,10 @@ class JwtAuthenticationFilter(
         val token = resolveToken(request)
 
         if (token != null && jwtTokenProvider.validateToken(token)) {
+            if (jwtTokenProvider.isBlacklisted(token)) {
+                response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Token has been revoked")
+                return
+            }
             val username = jwtTokenProvider.getUsername(token)
             request.setAttribute("username", username)
         } else {

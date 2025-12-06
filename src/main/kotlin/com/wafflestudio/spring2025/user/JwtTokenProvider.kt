@@ -42,10 +42,6 @@ class JwtTokenProvider(
 
     fun validateToken(token: String): Boolean {
         try {
-            if (redisTemplate.hasKey(token)) {
-                return false // 블랙리스트에 있으면 유효하지 않은 토큰으로 처리
-            }
-
             Jwts
                 .parserBuilder()
                 .setSigningKey(key)
@@ -58,15 +54,16 @@ class JwtTokenProvider(
         return false
     }
 
+    fun isBlacklisted(token: String): Boolean = redisTemplate.hasKey("blacklist:$token") ?: false
+
     fun getExpiration(token: String): Long {
         val claims =
             Jwts
                 .parserBuilder()
-                .setSigningKey(key)
+                .setSigningKey(secretKey)
                 .build()
                 .parseClaimsJws(token)
                 .body
-
         return claims.expiration.time
     }
 }

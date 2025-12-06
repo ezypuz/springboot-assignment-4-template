@@ -2,13 +2,25 @@ name: Continuous Integration (CI)
 
 on:
   push:
-    branches: [ "**" ] # 모든 브랜치에서 실행 (기능 개발 중에도 테스트)
+    branches: [ "**" ]
   pull_request:
     branches: [ "main" ]
 
 jobs:
   test:
     runs-on: ubuntu-latest
+
+    services:
+      redis:
+        image: redis
+        ports:
+          - 6379:6379
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
     steps:
       - uses: actions/checkout@v3
 
@@ -18,8 +30,19 @@ jobs:
           java-version: '17'
           distribution: 'temurin'
 
-      # 여기서 테스트를 수행합니다!
+      - name: Create dummy application.yaml
+        run: |
+          mkdir -p src/main/resources
+          echo "spring:" > src/main/resources/application.yaml
+          echo "  datasource:" >> src/main/resources/application.yaml
+          echo "    url: jdbc:mysql://localhost:3306/mydb" >> src/main/resources/application.yaml
+
       - name: Run Tests with Gradle
         run: |
           chmod +x gradlew
           ./gradlew test
+        env:
+          SPRING_DATA_REDIS_HOST: localhost
+          SPRING_DATA_REDIS_PORT: 6379
+          JWT_SECRET: "testsecretkeytestsecretkeytestsecretkeytestsecretkey"
+          JWT_EXPIRATION_IN_MS: 3600000
