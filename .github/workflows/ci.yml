@@ -12,7 +12,7 @@ jobs:
 
     services:
       redis:
-        image: redis
+        image: redis:7-alpine
         ports:
           - 6379:6379
         options: >-
@@ -30,19 +30,12 @@ jobs:
           java-version: '17'
           distribution: 'temurin'
 
-      - name: Create dummy application.yaml
-        run: |
-          mkdir -p src/main/resources
-          echo "spring:" > src/main/resources/application.yaml
-          echo "  datasource:" >> src/main/resources/application.yaml
-          echo "    url: jdbc:mysql://localhost:3306/mydb" >> src/main/resources/application.yaml
+      - name: Grant execute permission for gradlew
+        run: chmod +x gradlew
 
       - name: Run Tests with Gradle
-        run: |
-          chmod +x gradlew
-          ./gradlew test
+        run: ./gradlew test
         env:
+          SPRING_PROFILES_ACTIVE: test
           SPRING_DATA_REDIS_HOST: localhost
           SPRING_DATA_REDIS_PORT: 6379
-          JWT_SECRET: "testsecretkeytestsecretkeytestsecretkeytestsecretkey"
-          JWT_EXPIRATION_IN_MS: 3600000
